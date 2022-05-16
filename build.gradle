@@ -1,17 +1,75 @@
 buildscript {
     repositories {
-        jcenter()
         google()
+        mavenCentral()
+        maven{  url "https://plugins.gradle.org/m2/" }
+        maven { url 'https://jitpack.io' }
+        maven { url "https://repo.maven.apache.org/maven2" }
+        mavenLocal()
+
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.4.0'
+        classpath 'com.android.tools.build:gradle:3.6.3'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
     }
 }
 
 allprojects {
     repositories {
-        jcenter()
         google()
+        mavenLocal()
+        mavenCentral()
+        maven { url 'https://maven.google.com' }
+        maven { url 'https://jitpack.io' }
+        maven { url "https://acra.googlecode.com/svn/repository/releases" }
+        maven { url "https://repo.maven.apache.org/maven2" }
+        maven{  url "https://plugins.gradle.org/m2/" }
     }
+}
+
+configure(allprojects) { project ->
+
+    version = VERSION_NAME
+    group = GROUP
+    buildscript {
+        repositories {
+            google()
+            mavenCentral()
+            mavenLocal()
+        }
+    }
+}
+
+project.ext.preDexLibs = !project.hasProperty('disablePreDex')
+
+subprojects {
+
+    group = 'org.mpandroidchart'
+
+    ext.androidToolsBuildGradle     = '4.0.0'
+    ext.androidBuildToolsVersion    = '29.0.3'
+    ext.androidMinSdkVersion        = 18
+    ext.androidCompileSdkVersion    = 28
+    ext.androidTargetSdkVersion     = 28
+
+    ext.androidAnnotationsVersion = '3.0.1'
+    ext.androidAnnotationsAPIVersion = '3.0.1'
+
+    // Improve build server performance by allowing disabling of pre-dexing
+    // (see http://tools.android.com/tech-docs/new-build-system/tips#TOC-Improving-Build-Server-performance.)
+    project.plugins.whenPluginAdded { plugin ->
+        if ("com.android.build.gradle.AppPlugin".equals(plugin.class.name)) {
+            project.android.dexOptions.preDexLibraries = rootProject.ext.preDexLibs
+        } else if ("com.android.build.gradle.LibraryPlugin".equals(plugin.class.name)) {
+            project.android.dexOptions.preDexLibraries = rootProject.ext.preDexLibs
+        }
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
+def isReleaseBuild() {
+    return version.contains("SNAPSHOT") == false
 }
