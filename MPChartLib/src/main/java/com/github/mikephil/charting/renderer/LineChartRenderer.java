@@ -429,6 +429,36 @@ public class LineChartRenderer extends LineRadarRenderer {
                     mRenderPaint.setColor(dataSet.getColor());
 
                     canvas.drawLines(mLineBuffer, 0, size, mRenderPaint);
+                    if (((LineDataSet) dataSet).showLabelOnTopOfLine() && dataSet.getLabel() != null && dataSet.getLabel().length() > 0) {
+                        int index = entryCount / 2;
+                        int cordinate = index * 4;
+                        float x2 = mLineBuffer[cordinate];
+                        float y2 = mLineBuffer[++cordinate];
+
+                        float x1 = mLineBuffer[0];
+                        float y1 = mLineBuffer[1];
+
+                        float a = Math.abs(x1 - x2);
+                        float b = Math.abs(y1 - y2);
+
+                        if (a != 0 && b != 0) {
+                            float angle = (float) Math.toDegrees(Math.atan2(b, a));
+
+
+                            mRenderPaint.setStyle(((LineDataSet) dataSet).getTextStyle());
+                            mRenderPaint.setPathEffect(null);
+                            mRenderPaint.setColor(((LineDataSet) dataSet).getTextColor());
+                            mRenderPaint.setTypeface(((LineDataSet) dataSet).getTypeface());
+                            mRenderPaint.setStrokeWidth(0.5f);
+                            mRenderPaint.setTextSize(((LineDataSet) dataSet).getTextSize());
+
+
+                            canvas.save();
+                            canvas.rotate(-angle, x2, y2);
+                            canvas.drawText(dataSet.getLabel(), x2 - 15, y2 - 15, mRenderPaint);
+                            canvas.restore();
+                        }
+                    }
                 }
             }
         }
@@ -591,8 +621,8 @@ public class LineChartRenderer extends LineRadarRenderer {
                         Utils.drawImage(
                                 c,
                                 icon,
-                                (int)(x + iconsOffset.x),
-                                (int)(y + iconsOffset.y),
+                                (int) (x + iconsOffset.x),
+                                (int) (y + iconsOffset.y),
                                 icon.getIntrinsicWidth(),
                                 icon.getIntrinsicHeight());
                     }

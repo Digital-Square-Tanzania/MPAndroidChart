@@ -4,6 +4,8 @@ package com.github.mikephil.charting.data;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
+import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.util.Log;
 
 import com.github.mikephil.charting.formatter.DefaultFillFormatter;
@@ -18,52 +20,62 @@ import java.util.List;
 public class LineDataSet extends LineRadarDataSet<Entry> implements ILineDataSet {
 
     /**
+     * the text color to use for the labels
+     */
+    protected int mTextColor = Color.BLACK;
+    /**
+     * the typeface used for the labels
+     */
+    protected Typeface mTypeface = null;
+    /**
+     * the text size of the labels
+     */
+    protected float mTextSize = Utils.convertDpToPixel(10f);
+    /**
      * Drawing mode for this line dataset
      **/
     private LineDataSet.Mode mMode = Mode.LINEAR;
-
     /**
      * List representing all colors that are used for the circles
      */
     private List<Integer> mCircleColors = null;
-
     /**
      * the color of the inner circles
      */
     private int mCircleHoleColor = Color.WHITE;
-
     /**
      * the radius of the circle-shaped value indicators
      */
     private float mCircleRadius = 8f;
-
     /**
      * the hole radius of the circle-shaped value indicators
      */
     private float mCircleHoleRadius = 4f;
-
     /**
      * sets the intensity of the cubic lines
      */
     private float mCubicIntensity = 0.2f;
-
     /**
      * the path effect of this DataSet that makes dashed lines possible
      */
     private DashPathEffect mDashPathEffect = null;
-
     /**
      * formatter for customizing the position of the fill-line
      */
     private IFillFormatter mFillFormatter = new DefaultFillFormatter();
-
     /**
      * if true, drawing circles is enabled
      */
     private boolean mDrawCircles = true;
-
     private boolean mDrawCircleHole = true;
-
+    /**
+     * if true, drawing label on top of the line is enabled
+     */
+    private boolean showLabelOnTopOfLine = false;
+    /**
+     * the style of the label text
+     */
+    private Paint.Style mTextStyle = Paint.Style.FILL_AND_STROKE;
 
     public LineDataSet(List<Entry> yVals, String label) {
         super(yVals, label);
@@ -80,6 +92,87 @@ public class LineDataSet extends LineRadarDataSet<Entry> implements ILineDataSet
         // mColors.add(Color.rgb(192, 255, 140));
         // mColors.add(Color.rgb(255, 247, 140));
         mCircleColors.add(Color.rgb(140, 234, 255));
+    }
+
+    /**
+     * Returns the color of the value-text that is drawn next to the LimitLine.
+     *
+     * @return
+     */
+    public Paint.Style getTextStyle() {
+        return mTextStyle;
+    }
+
+    /**
+     * Sets the color of the value-text that is drawn next to the LimitLine.
+     * Default: Paint.Style.FILL_AND_STROKE
+     *
+     * @param style
+     */
+    public void setTextStyle(Paint.Style style) {
+        this.mTextStyle = style;
+    }
+
+    /**
+     * Returns the text color that is set for the labels.
+     *
+     * @return
+     */
+    public int getTextColor() {
+        return mTextColor;
+    }
+
+    /**
+     * Sets the text color to use for the labels. Make sure to use
+     * getResources().getColor(...) when using a color from the resources.
+     *
+     * @param color
+     */
+    public void setTextColor(int color) {
+        mTextColor = color;
+    }
+
+    /**
+     * returns the Typeface used for the labels, returns null if none is set
+     *
+     * @return
+     */
+    public Typeface getTypeface() {
+        return mTypeface;
+    }
+
+    /**
+     * sets a specific Typeface for the labels
+     *
+     * @param tf
+     */
+    public void setTypeface(Typeface tf) {
+        mTypeface = tf;
+    }
+
+    /**
+     * returns the text size that is currently set for the labels, in pixels
+     *
+     * @return
+     */
+    public float getTextSize() {
+        return mTextSize;
+    }
+
+    /**
+     * sets the size of the label text in density pixels min = 6f, max = 24f, default
+     * 10f
+     *
+     * @param size the text size, in DP
+     */
+    public void setTextSize(float size) {
+
+        if (size > 24f)
+            size = 24f;
+        if (size < 6f)
+            size = 6f;
+
+        mTextSize = Utils.convertDpToPixel(size);
     }
 
     @Override
@@ -126,6 +219,11 @@ public class LineDataSet extends LineRadarDataSet<Entry> implements ILineDataSet
         mMode = mode;
     }
 
+    @Override
+    public float getCubicIntensity() {
+        return mCubicIntensity;
+    }
+
     /**
      * Sets the intensity for cubic lines (if enabled). Max = 1f = very cubic,
      * Min = 0.05f = low cubic effect, Default: 0.2f
@@ -143,10 +241,9 @@ public class LineDataSet extends LineRadarDataSet<Entry> implements ILineDataSet
     }
 
     @Override
-    public float getCubicIntensity() {
-        return mCubicIntensity;
+    public float getCircleRadius() {
+        return mCircleRadius;
     }
-
 
     /**
      * Sets the radius of the drawn circles.
@@ -164,8 +261,8 @@ public class LineDataSet extends LineRadarDataSet<Entry> implements ILineDataSet
     }
 
     @Override
-    public float getCircleRadius() {
-        return mCircleRadius;
+    public float getCircleHoleRadius() {
+        return mCircleHoleRadius;
     }
 
     /**
@@ -183,9 +280,12 @@ public class LineDataSet extends LineRadarDataSet<Entry> implements ILineDataSet
         }
     }
 
-    @Override
-    public float getCircleHoleRadius() {
-        return mCircleHoleRadius;
+    /**
+     * This function is deprecated because of unclarity. Use getCircleRadius instead.
+     */
+    @Deprecated
+    public float getCircleSize() {
+        return getCircleRadius();
     }
 
     /**
@@ -199,14 +299,6 @@ public class LineDataSet extends LineRadarDataSet<Entry> implements ILineDataSet
     @Deprecated
     public void setCircleSize(float size) {
         setCircleRadius(size);
-    }
-
-    /**
-     * This function is deprecated because of unclarity. Use getCircleRadius instead.
-     */
-    @Deprecated
-    public float getCircleSize() {
-        return getCircleRadius();
     }
 
     /**
@@ -279,16 +371,6 @@ public class LineDataSet extends LineRadarDataSet<Entry> implements ILineDataSet
         return mCircleColors;
     }
 
-    @Override
-    public int getCircleColor(int index) {
-        return mCircleColors.get(index);
-    }
-
-    @Override
-    public int getCircleColorCount() {
-        return mCircleColors.size();
-    }
-
     /**
      * Sets the colors that should be used for the circles of this DataSet.
      * Colors are reused as soon as the number of Entries the DataSet represents
@@ -313,6 +395,16 @@ public class LineDataSet extends LineRadarDataSet<Entry> implements ILineDataSet
      */
     public void setCircleColors(int... colors) {
         this.mCircleColors = ColorTemplate.createColors(colors);
+    }
+
+    @Override
+    public int getCircleColor(int index) {
+        return mCircleColors.get(index);
+    }
+
+    @Override
+    public int getCircleColorCount() {
+        return mCircleColors.size();
     }
 
     /**
@@ -361,6 +453,11 @@ public class LineDataSet extends LineRadarDataSet<Entry> implements ILineDataSet
         mCircleColors.clear();
     }
 
+    @Override
+    public int getCircleHoleColor() {
+        return mCircleHoleColor;
+    }
+
     /**
      * Sets the color of the inner circle of the line-circles.
      *
@@ -368,11 +465,6 @@ public class LineDataSet extends LineRadarDataSet<Entry> implements ILineDataSet
      */
     public void setCircleHoleColor(int color) {
         mCircleHoleColor = color;
-    }
-
-    @Override
-    public int getCircleHoleColor() {
-        return mCircleHoleColor;
     }
 
     /**
@@ -389,6 +481,11 @@ public class LineDataSet extends LineRadarDataSet<Entry> implements ILineDataSet
         return mDrawCircleHole;
     }
 
+    @Override
+    public IFillFormatter getFillFormatter() {
+        return mFillFormatter;
+    }
+
     /**
      * Sets a custom IFillFormatter to the chart that handles the position of the
      * filled-line for each DataSet. Set this to null to use the default logic.
@@ -403,9 +500,12 @@ public class LineDataSet extends LineRadarDataSet<Entry> implements ILineDataSet
             mFillFormatter = formatter;
     }
 
-    @Override
-    public IFillFormatter getFillFormatter() {
-        return mFillFormatter;
+    public boolean showLabelOnTopOfLine() {
+        return showLabelOnTopOfLine;
+    }
+
+    public void setShowLabelOnTopOfLine(boolean showLabelOnTopOfLine) {
+        this.showLabelOnTopOfLine = showLabelOnTopOfLine;
     }
 
     public enum Mode {
