@@ -45,3 +45,8 @@ build/
 target/
 
 .DS_Store
+caches
+daemon
+github.properties
+native
+wrapper
